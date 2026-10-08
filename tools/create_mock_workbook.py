@@ -8,6 +8,8 @@ Usage (from the repository root)::
 The data follows docs/data-model.md. ZoneProfiles has no SKU/location columns, so the zone is
 linked to its pick location by name (zone ``name`` == ``Locations.location_id``) and to its SKU
 through the single inventory balance stocked at that location.
+
+The file source plays ``data/test1.mp4`` (a local video that is not in the repository).
 """
 
 from __future__ import annotations
@@ -135,9 +137,10 @@ def mock_rows() -> Rows:
         "SourceProfiles": [
             {
                 "source_profile_id": SOURCE_PROFILE_ID,
-                "name": "Pick-zone demo video",
+                "name": "Kai's pick-zone video (data/test1.mp4)",
                 "source_type": "file",
-                "file_path": "uploads/pick-zone-demo.mp4",
+                # Relative to the data dir: data/test1.mp4 (local only, *.mp4 is git-ignored).
+                "file_path": "test1.mp4",
                 "camera_index": "",
                 "network_url_redacted": "",
                 "analysis_fps": 4,

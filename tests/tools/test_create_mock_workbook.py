@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from app.core.context import _inside
+from app.core.settings import Settings
 from app.persistence.workbook import WorkbookRepository
 from tools.create_mock_workbook import main, mock_rows, write_mock_workbook
 
@@ -64,3 +66,18 @@ def test_cli_writes_the_workbook_and_refuses_to_overwrite_without_force(tmp_path
     assert target.is_file()
     assert main([str(target)]) == 1
     assert main([str(target), "--force"]) == 0
+
+
+def test_mock_source_plays_kais_local_video_from_the_data_dir(tmp_path: Path) -> None:
+    path = write_mock_workbook(tmp_path / "pick-zone-demo.xlsx")
+    profile = WorkbookRepository(tmp_path).load_snapshot(path).indexes.source_profile_by_id[
+        "SRC-FILE-01"
+    ]
+    settings = Settings(project_dir=tmp_path)
+    assert settings.data_dir is not None
+
+    # file_path is stored relative to the data dir, so data/test1.mp4 is "test1.mp4".
+    assert profile["file_path"] == "test1.mp4"
+    assert _inside(settings.data_dir, str(profile["file_path"])) == (
+        tmp_path / "data" / "test1.mp4"
+    ).resolve()
