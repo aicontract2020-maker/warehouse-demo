@@ -218,7 +218,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
     filtering, NMS, class allow-list, deterministic ordering, and malformed model rejection
   - Depends on: TASK-006
 
-- [ ] **TASK-026** [M] [P] Implement manifest validation and YOLO-shaped ONNX detector
+- [x] **TASK-026** [M] [P] Implement manifest validation and YOLO-shaped ONNX detector
   - Creates: `code/pick-zone-demo/app/vision/model_manifest.py`,
     `code/pick-zone-demo/app/vision/onnx_detector.py`
   - Contracts: `contracts/vision-domain-contract.md`
