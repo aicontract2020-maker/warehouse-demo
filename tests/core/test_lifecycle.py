@@ -36,6 +36,7 @@ from app.vision.detector import (
     FrameEnvelope,
 )
 from tests.persistence.test_workbook import base_rows, write_workbook
+from tools.create_mock_workbook import mock_rows
 
 NOW = datetime(2026, 10, 8, 16, 0, tzinfo=UTC)
 SESSION = UUID(int=0x5E55)
@@ -460,6 +461,62 @@ def test_start_identifies_every_missing_prerequisite_and_starts_nothing(harness:
     assert lifecycle.state is MonitoringState.STOPPED
     assert not source.opened
     assert not (live_worker_names() & WORKER_THREADS)
+
+
+def mock_request(task_id: str) -> StartRequest:
+    return StartRequest(
+        source_profile_id="SRC-FILE-01", zone_profile_id="ZONE-A-03-01", task_id=task_id
+    )
+
+
+def test_mock_task_at_the_zone_location_starts_monitoring(harness: Harness) -> None:
+    source = FakeSource()
+    context = harness.context(rows=mock_rows(), sources={"SRC-FILE-01": [source]})
+    lifecycle = harness.lifecycle(context)
+
+    lifecycle.start(mock_request("PICK-1001"))
+
+    assert lifecycle.state is MonitoringState.RUNNING
+    snapshot = context.runtime.snapshot()
+    assert snapshot.task is not None and snapshot.task.task_id == "PICK-1001"
+    assert snapshot.inventory is not None and snapshot.inventory.location_id == "A-03-01"
+    lifecycle.stop()
+
+
+def test_mock_task_at_another_location_is_a_profile_task_mismatch(harness: Harness) -> None:
+    source = FakeSource()
+    context = harness.context(rows=mock_rows(), sources={"SRC-FILE-01": [source]})
+    lifecycle = harness.lifecycle(context)
+
+    error = error_of(lambda: lifecycle.start(mock_request("PICK-1002")))
+
+    assert (error.code, error.status) == ("PROFILE_TASK_MISMATCH", 409)
+    assert error.details["missing"] == [
+        {"kind": "zone_location", "id": "A-03-01", "reason": "task_mismatch"}
+    ]
+    assert lifecycle.state is MonitoringState.STOPPED
+    assert not source.opened
+
+
+def test_mismatch_ranks_after_not_found_codes_and_before_validation_error(
+    harness: Harness,
+) -> None:
+    def drop_rice_staging(rows: dict[str, list[dict[str, object]]]) -> None:
+        rows["Inventory"] = [
+            item
+            for item in rows["Inventory"]
+            if (item["location_id"], item["sku_id"]) != ("STAGING-01", "SKU-RICE-10KG")
+        ]
+
+    rows = mock_rows()
+    drop_rice_staging(rows)
+    context = harness.context(rows=rows)
+    lifecycle = harness.lifecycle(context)
+
+    assert error_of(lambda: lifecycle.start(mock_request("PICK-1002"))).code == (
+        "PROFILE_TASK_MISMATCH"
+    )
+    assert error_of(lambda: lifecycle.start(mock_request("PICK-404"))).code == "TASK_NOT_FOUND"
 
 
 def test_start_uses_contract_codes_in_precedence_order(harness: Harness) -> None:
