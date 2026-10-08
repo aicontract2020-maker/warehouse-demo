@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
@@ -238,8 +239,8 @@ def test_manual_edited_approval_requires_reason_and_preserves_original() -> None
     assert result.decision is Decision.MANUAL_APPROVED
     assert result.mutation is not None
     review_row = result.mutation.appends["Reviews"][0]
-    assert review_row["original_values"]["quantity"] == 3
-    assert review_row["final_values"]["quantity"] == 2
+    assert json.loads(review_row["original_values_json"])["quantity"] == 3
+    assert json.loads(review_row["final_values_json"])["quantity"] == 2
     assert result.mutation.upserts["Inventory"][0]["quantity"] == 8
 
 

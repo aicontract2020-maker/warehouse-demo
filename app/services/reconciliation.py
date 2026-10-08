@@ -65,7 +65,15 @@ class ReconciliationService:
         *,
         evidence_path: str | None,
         persistence_writable: bool,
+        workbook_version: int = 0,
+        started_at: datetime | None = None,
+        ended_at: datetime | None = None,
     ) -> ReconciliationResult:
+        timing = {
+            "workbook_version": workbook_version,
+            "started_at": started_at,
+            "ended_at": ended_at,
+        }
         if event.event_id is None or event.context is None:
             raise ValueError("completed event identity and context are required")
         if event.net_quantity < 0:
@@ -78,6 +86,7 @@ class ReconciliationService:
                 str(event.event_id),
                 self._now(),
                 evidence_path,
+                **timing,
             )
             return ReconciliationResult(Decision.NO_OP, None, (), mutation)
         if event.state is not EventState.COMPLETED:
@@ -112,6 +121,7 @@ class ReconciliationService:
                 str(event.event_id),
                 self._now(),
                 evidence_path,
+                **timing,
             )
         except InventoryMutationError as error:
             return self._review(error.code)
@@ -125,6 +135,8 @@ class ReconciliationService:
         destination_inventory: InventoryBalance,
         command: ReviewCommand,
         idempotency_key: str,
+        *,
+        workbook_version: int = 0,
     ) -> ReconciliationResult:
         if event.state is not EventState.REVIEW_REQUIRED:
             raise ValueError("EVENT_NOT_REVIEWABLE")
@@ -145,6 +157,7 @@ class ReconciliationService:
                 self._now(),
                 None,
                 command,
+                workbook_version=workbook_version,
             )
             return ReconciliationResult(Decision.REJECTED, None, (), mutation)
 
@@ -170,6 +183,7 @@ class ReconciliationService:
                 self._now(),
                 None,
                 review_command,
+                workbook_version=workbook_version,
             )
         except InventoryMutationError as error:
             return self._review(error.code)

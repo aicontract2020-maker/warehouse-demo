@@ -145,6 +145,8 @@ class WorkbookWriter:
             )
             for field, expected in precondition.expected.items():
                 actual = current.get(field) if current else None
+                if actual == "":
+                    actual = None  # the reader returns blank cells as ""
                 if actual != expected:
                     raise WorkbookFailure(
                         "STALE_SNAPSHOT",
