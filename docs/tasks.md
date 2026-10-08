@@ -211,7 +211,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
   - Satisfies: AC-3, AC-4, AC-E2, AC-E8
   - Depends on: TASK-023
 
-- [ ] **TASK-025** [M] [P] Write model-manifest and ONNX post-processing tests
+- [x] **TASK-025** [M] [P] Write model-manifest and ONNX post-processing tests
   - Creates: `code/pick-zone-demo/tests/vision/test_onnx_detector.py`
   - Tests: AC-9, AC-E3; AC-S1
   - Verifies: SHA-256/license gate, input layouts and normalization, output mapping, confidence
