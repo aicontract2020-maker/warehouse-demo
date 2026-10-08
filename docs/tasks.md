@@ -197,7 +197,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
   - Satisfies: AC-1, AC-2, AC-4, AC-E1, AC-E8
   - Depends on: TASK-021
 
-- [ ] **TASK-023** [M] Write network-stream reconnect tests
+- [x] **TASK-023** [M] Write network-stream reconnect tests
   - Creates: `code/pick-zone-demo/tests/video/test_network_source.py`
   - Tests: AC-3, AC-4, AC-E2, AC-E8
   - Verifies: scheme validation, finite open/read timeout, bounded 1/2/4/8/10-second backoff,
