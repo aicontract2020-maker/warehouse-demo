@@ -242,7 +242,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
 
 ### Runtime Composition And APIs
 
-- [ ] **TASK-029** [M] [P] Write runtime-state and preview-overlay tests
+- [x] **TASK-029** [M] [P] Write runtime-state and preview-overlay tests
   - Creates: `code/pick-zone-demo/tests/services/test_runtime_state.py`
   - Tests: AC-8, AC-9, AC-10, AC-17, AC-28, AC-E5, AC-E6
   - Verifies: immutable snapshots, source sequence rejection, latest-only publication, required
