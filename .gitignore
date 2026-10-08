@@ -9,3 +9,6 @@ __pycache__/
 data/uploads/
 data/evidence/
 models/
+
+# generated mock/demo workbooks (tools/create_mock_workbook.py)
+data/*.xlsx
