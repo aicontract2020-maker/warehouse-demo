@@ -233,7 +233,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
     finalization timeout, relative manifest path, missing evidence, and shutdown behavior
   - Depends on: TASK-012
 
-- [ ] **TASK-028** [M] [P] Implement bounded evidence capture and clip finalization
+- [x] **TASK-028** [M] [P] Implement bounded evidence capture and clip finalization
   - Creates: `code/pick-zone-demo/app/video/evidence.py`
   - Contracts: `contracts/events-review-api.md`, `contracts/live-stream-contract.md`
   - Plan: sections 4.11 and 6
