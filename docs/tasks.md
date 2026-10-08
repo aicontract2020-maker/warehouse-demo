@@ -242,14 +242,14 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
 
 ### Runtime Composition And APIs
 
-- [ ] **TASK-029** [M] [P] Write runtime-state and preview-overlay tests
+- [x] **TASK-029** [M] [P] Write runtime-state and preview-overlay tests
   - Creates: `code/pick-zone-demo/tests/services/test_runtime_state.py`
   - Tests: AC-8, AC-9, AC-10, AC-17, AC-28, AC-E5, AC-E6
   - Verifies: immutable snapshots, source sequence rejection, latest-only publication, required
     metrics/state fields, zone/detection/track/action drawing, and JPEG generation
   - Depends on: TASK-008, TASK-012, TASK-020
 
-- [ ] **TASK-030** [M] [P] Implement runtime state store and annotated preview renderer
+- [x] **TASK-030** [M] [P] Implement runtime state store and annotated preview renderer
   - Creates: `code/pick-zone-demo/app/services/runtime_state.py`,
     `code/pick-zone-demo/app/vision/overlay.py`
   - Contracts: `contracts/live-stream-contract.md`, `contracts/vision-domain-contract.md`
@@ -257,14 +257,14 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
   - Satisfies: AC-8, AC-9, AC-10, AC-17, AC-28, AC-E5, AC-E6
   - Depends on: TASK-029
 
-- [ ] **TASK-031** [M] Write application-context and worker-lifecycle tests
+- [x] **TASK-031** [M] Write application-context and worker-lifecycle tests
   - Creates: `code/pick-zone-demo/tests/core/test_lifecycle.py`
   - Tests: AC-4, AC-6, AC-8, AC-29, AC-30, AC-E8
   - Verifies: prerequisite aggregation, worker graph, start/pause/resume/stop/reset transitions,
     source replacement, bounded queues, persistence blocking, and shutdown within five seconds
   - Depends on: TASK-018, TASK-022, TASK-024, TASK-026, TASK-028, TASK-030
 
-- [ ] **TASK-032** [M] Implement application context, ordered analyzer, and lifecycle service
+- [x] **TASK-032** [M] Implement application context, ordered analyzer, and lifecycle service
   - Creates: `code/pick-zone-demo/app/core/context.py`,
     `code/pick-zone-demo/app/services/orchestrator.py`,
     `code/pick-zone-demo/app/core/lifecycle.py`
