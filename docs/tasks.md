@@ -226,7 +226,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
   - Satisfies: AC-9, AC-E3; AC-S1
   - Depends on: TASK-025
 
-- [ ] **TASK-027** [M] [P] Write event-evidence retention tests
+- [x] **TASK-027** [M] [P] Write event-evidence retention tests
   - Creates: `code/pick-zone-demo/tests/video/test_evidence.py`
   - Tests: AC-27, AC-E2, AC-E8
   - Verifies: bounded encoded ring, two-second pre/post roll, controlled FFmpeg arguments,
