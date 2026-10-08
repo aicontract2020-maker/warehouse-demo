@@ -391,7 +391,9 @@ def audit_row(
         "after_json": None,
         "result": result,
         "error_code": error_code,
-        "details_json": json.dumps(dict(details or {}), sort_keys=True, default=str),
+        "details_json": json.dumps(
+            dict(details or {}), sort_keys=True, separators=(",", ":"), default=str
+        ),
     }
 
 
@@ -487,7 +489,7 @@ def build_review_mutation(
         "final_unit": None,
         "final_source_location_id": None,
         "aggregate_confidence": event.aggregate_confidence,
-        "integrity_flags_json": json.dumps(sorted(event.integrity_flags)),
+        "integrity_flags_json": json.dumps(sorted(event.integrity_flags), separators=(",", ":")),
         "review_reason": review_reason,
         "decision": "pending",
         "started_at": iso(timing.started_at),
@@ -510,7 +512,9 @@ def build_review_mutation(
             "source_timestamp_ms": item.source_timestamp_ms,
             "frame_sequence": item.frame_sequence,
             "confidence": item.confidence,
-            "bbox_json": json.dumps([float(value) for value in item.bbox_xyxy]),
+            "bbox_json": json.dumps(
+                [float(value) for value in item.bbox_xyxy], separators=(",", ":")
+            ),
             "created_at": timestamp,
         }
         for item in event.actions
@@ -753,6 +757,9 @@ class BusinessEventService:
                 master.destination_inventory,
                 evidence_path=evidence_path,
                 persistence_writable=self._channel.writable,
+                workbook_version=self._channel.workbook_version,
+                started_at=timing.started_at,
+                ended_at=timing.ended_at,
             )
         except ValueError as error:
             result = ReconciliationResult(Decision.REVIEW_REQUIRED, str(error), (), None)
@@ -798,10 +805,9 @@ class BusinessEventService:
             self.decisions.append(
                 EventDecisionRecord(snapshot.event_id, result.decision.value, None, True)
             )
+        shown = EventState.COMPLETED if result.decision is Decision.NO_OP else EventState.APPROVED
         self._runtime.update_event(
-            event_view(
-                snapshot, state=EventState.APPROVED.value, last_action_at=timing.last_action_at
-            ),
+            event_view(snapshot, state=shown.value, last_action_at=timing.last_action_at),
             replace_only=snapshot.event_id,
         )
         self._refresh_master()

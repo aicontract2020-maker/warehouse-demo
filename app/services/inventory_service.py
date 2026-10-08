@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from uuid import UUID
 
@@ -14,6 +15,11 @@ from app.domain.mutations import (
     canonical_hash,
     stable_uuid,
 )
+
+
+def _json(value: object) -> str:
+    """Canonical compact JSON for workbook ``*_json`` cells."""
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
 
 class InventoryMutationError(ValueError):
@@ -35,6 +41,10 @@ class InventoryService:
         decided_at: datetime,
         evidence_path: str | None,
         review: ReviewCommand | None = None,
+        *,
+        workbook_version: int = 0,
+        started_at: datetime | None = None,
+        ended_at: datetime | None = None,
     ) -> WorkbookMutation:
         self._validate_inventory(source, destination, task, final)
         if source.quantity < final.quantity:
@@ -63,7 +73,8 @@ class InventoryService:
             "last_event_id": str(event.event_id),
         }
         event_row = self._event_row(
-            event, final, decision, mutation_id, timestamp, evidence_path
+            event, final, decision, mutation_id, timestamp, evidence_path,
+            review=review, started_at=started_at, ended_at=ended_at,
         )
         task_row = {
             "task_id": task.task_id,
@@ -79,12 +90,21 @@ class InventoryService:
             "Inventory": (source_row, destination_row),
             "Tasks": (task_row,),
         }
+        inventory_checks = tuple(
+            MutationPrecondition(
+                "inventory",
+                balance.inventory_id,
+                {"version": balance.version, "quantity": balance.quantity},
+            )
+            for balance in (source, destination)
+        )
         return self._mutation(
             event,
             idempotency_key,
             mutation_id,
-            source.version,
+            workbook_version,
             task,
+            inventory_checks,
             upserts,
             appends,
             {"decision": decision, "final": final, "task_id": task.task_id},
@@ -99,6 +119,10 @@ class InventoryService:
         decided_at: datetime,
         evidence_path: str | None,
         review: ReviewCommand | None = None,
+        *,
+        workbook_version: int = 0,
+        started_at: datetime | None = None,
+        ended_at: datetime | None = None,
     ) -> WorkbookMutation:
         mutation_id = stable_uuid(idempotency_key, "mutation")
         timestamp = decided_at.isoformat()
@@ -106,7 +130,8 @@ class InventoryService:
         upserts = {
             "Events": (
                 self._event_row(
-                    event, final, decision, mutation_id, timestamp, evidence_path
+                    event, final, decision, mutation_id, timestamp, evidence_path,
+                    review=review, started_at=started_at, ended_at=ended_at,
                 ),
             )
         }
@@ -117,8 +142,9 @@ class InventoryService:
             event,
             idempotency_key,
             mutation_id,
-            0,
+            workbook_version,
             task,
+            (),
             upserts,
             appends,
             {"decision": decision, "task_id": task.task_id},
@@ -160,11 +186,22 @@ class InventoryService:
         mutation_id: UUID,
         timestamp: str,
         evidence_path: str | None,
+        *,
+        review: ReviewCommand | None,
+        started_at: datetime | None,
+        ended_at: datetime | None,
     ) -> dict[str, object]:
         observed = InventoryService.observed_result(event)
-        return {
+        context = event.context
+        assert context is not None  # observed_result already enforced this
+        state = {"rejected": "rejected", "no_op": "completed"}.get(decision, "approved")
+        row: dict[str, object] = {
             "event_id": str(event.event_id),
-            "state": "rejected" if decision == "rejected" else "approved",
+            "session_id": str(context.source_session_id),
+            "task_id": context.task_id,
+            "zone_profile_id": context.zone_profile_id,
+            "zone_version": context.zone_version,
+            "state": state,
             "observed_sku_id": observed.sku_id,
             "observed_quantity": observed.quantity,
             "observed_unit": observed.unit,
@@ -174,14 +211,23 @@ class InventoryService:
             "final_unit": final.unit if final else None,
             "final_source_location_id": final.source_location_id if final else None,
             "aggregate_confidence": event.aggregate_confidence,
-            "integrity_flags": sorted(event.integrity_flags),
+            "integrity_flags_json": _json(sorted(event.integrity_flags)),
             "review_reason": event.review_reason,
             "decision": decision,
-            "evidence_path": evidence_path,
             "decided_at": timestamp,
             "applied_at": timestamp if final and final.quantity > 0 else None,
             "mutation_id": str(mutation_id),
         }
+        # Upserts merge into the stored row, so leaving a key out keeps the value that
+        # was written when the event was first persisted (e.g. at review time).
+        optional = {
+            "evidence_path": evidence_path,
+            "started_at": started_at.isoformat() if started_at else None,
+            "ended_at": ended_at.isoformat() if ended_at else None,
+            "created_at": timestamp if review is None else None,
+        }
+        row.update({key: value for key, value in optional.items() if value is not None})
+        return row
 
     @staticmethod
     def _common_appends(
@@ -210,7 +256,10 @@ class InventoryService:
         appends: dict[str, tuple[dict[str, object], ...]] = {
             "AuditLog": (audit,),
             "MutationReceipts": (receipt,),
-            "EventActions": tuple(
+        }
+        if review is None:
+            # A reviewed event already stored its actions when it was marked for review.
+            appends["EventActions"] = tuple(
                 {
                     "action_id": str(item.action_id),
                     "event_id": str(item.event_id),
@@ -222,11 +271,11 @@ class InventoryService:
                     "source_timestamp_ms": item.source_timestamp_ms,
                     "frame_sequence": item.frame_sequence,
                     "confidence": item.confidence,
-                    "bbox": item.bbox_xyxy,
+                    "bbox_json": _json(list(item.bbox_xyxy)),
+                    "created_at": timestamp,
                 }
                 for item in event.actions
-            ),
-        }
+            )
         if review:
             original = InventoryService.observed_result(event)
             final = review.final
@@ -236,20 +285,20 @@ class InventoryService:
                     "event_id": str(event.event_id),
                     "decision": review.command.value,
                     "operator_id": review.operator_id,
-                    "original_values": {
+                    "original_values_json": _json({
                         "sku_id": original.sku_id,
                         "quantity": original.quantity,
                         "unit": original.unit,
                         "source_location_id": original.source_location_id,
-                    },
-                    "final_values": None
+                    }),
+                    "final_values_json": None
                     if final is None
-                    else {
+                    else _json({
                         "sku_id": final.sku_id,
                         "quantity": final.quantity,
                         "unit": final.unit,
                         "source_location_id": final.source_location_id,
-                    },
+                    }),
                     "reason": review.reason,
                     "created_at": timestamp,
                 },
@@ -261,8 +310,9 @@ class InventoryService:
         event: EventSnapshot,
         idempotency_key: str,
         mutation_id: UUID,
-        source_version: int,
+        workbook_version: int,
         task: PickTask,
+        inventory_checks: tuple[MutationPrecondition, ...],
         upserts: dict[str, tuple[dict[str, object], ...]],
         appends: dict[str, tuple[dict[str, object], ...]],
         canonical_effects: object,
@@ -271,7 +321,7 @@ class InventoryService:
             mutation_id=mutation_id,
             idempotency_key=idempotency_key,
             request_id=None,
-            expected_workbook_version=0,
+            expected_workbook_version=workbook_version,
             preconditions=(
                 MutationPrecondition(
                     "event", str(event.event_id), {"mutation_id": None}
@@ -279,9 +329,7 @@ class InventoryService:
                 MutationPrecondition(
                     "task", task.task_id, {"status": task.status.value}
                 ),
-                MutationPrecondition(
-                    "inventory", task.source_location_id, {"version": source_version}
-                ),
+                *inventory_checks,
             ),
             upserts=upserts,
             appends=appends,

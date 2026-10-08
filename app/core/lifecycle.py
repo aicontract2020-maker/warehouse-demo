@@ -74,6 +74,7 @@ PREREQUISITE_CODES = (
     ("source_profile", "SOURCE_PROFILE_NOT_FOUND"),
     ("zone_profile", "ZONE_PROFILE_NOT_FOUND"),
     ("task", "TASK_NOT_FOUND"),
+    ("zone_location", "PROFILE_TASK_MISMATCH"),
 )
 
 
@@ -336,6 +337,11 @@ class LifecycleService:
                     lack(f"{kind}_location", location_id, "inactive")
                 if (location_id, sku_id) not in indexes.inventory_by_location_sku:
                     lack(f"{kind}_inventory", f"{location_id}/{sku_id}", "not_found")
+            # ZoneProfiles has no SKU/location columns: a zone's name is the location_id it
+            # watches, and the zone's SKU is whatever that location stocks (checked above via
+            # the source inventory balance).
+            if zone is not None and str(task["source_location_id"]) != zone.name:
+                lack("zone_location", zone.name, "task_mismatch")
 
         detector: Detector | None = None
         allowed: frozenset[str] = frozenset()
