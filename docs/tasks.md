@@ -204,7 +204,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
     health updates, active-event interruption, continuity segment change, and release
   - Depends on: TASK-022
 
-- [ ] **TASK-024** [M] Implement RTSP/HTTP stream capture and bounded reconnection
+- [x] **TASK-024** [M] Implement RTSP/HTTP stream capture and bounded reconnection
   - Creates: `code/pick-zone-demo/app/video/network_source.py`
   - Contracts: `contracts/source-monitoring-api.md`, `contracts/vision-domain-contract.md`
   - Plan: sections 4.2 and 5.3
