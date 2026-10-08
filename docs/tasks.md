@@ -197,28 +197,28 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
   - Satisfies: AC-1, AC-2, AC-4, AC-E1, AC-E8
   - Depends on: TASK-021
 
-- [ ] **TASK-023** [M] Write network-stream reconnect tests
+- [x] **TASK-023** [M] Write network-stream reconnect tests
   - Creates: `code/pick-zone-demo/tests/video/test_network_source.py`
   - Tests: AC-3, AC-4, AC-E2, AC-E8
   - Verifies: scheme validation, finite open/read timeout, bounded 1/2/4/8/10-second backoff,
     health updates, active-event interruption, continuity segment change, and release
   - Depends on: TASK-022
 
-- [ ] **TASK-024** [M] Implement RTSP/HTTP stream capture and bounded reconnection
+- [x] **TASK-024** [M] Implement RTSP/HTTP stream capture and bounded reconnection
   - Creates: `code/pick-zone-demo/app/video/network_source.py`
   - Contracts: `contracts/source-monitoring-api.md`, `contracts/vision-domain-contract.md`
   - Plan: sections 4.2 and 5.3
   - Satisfies: AC-3, AC-4, AC-E2, AC-E8
   - Depends on: TASK-023
 
-- [ ] **TASK-025** [M] [P] Write model-manifest and ONNX post-processing tests
+- [x] **TASK-025** [M] [P] Write model-manifest and ONNX post-processing tests
   - Creates: `code/pick-zone-demo/tests/vision/test_onnx_detector.py`
   - Tests: AC-9, AC-E3; AC-S1
   - Verifies: SHA-256/license gate, input layouts and normalization, output mapping, confidence
     filtering, NMS, class allow-list, deterministic ordering, and malformed model rejection
   - Depends on: TASK-006
 
-- [ ] **TASK-026** [M] [P] Implement manifest validation and YOLO-shaped ONNX detector
+- [x] **TASK-026** [M] [P] Implement manifest validation and YOLO-shaped ONNX detector
   - Creates: `code/pick-zone-demo/app/vision/model_manifest.py`,
     `code/pick-zone-demo/app/vision/onnx_detector.py`
   - Contracts: `contracts/vision-domain-contract.md`
@@ -226,14 +226,14 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
   - Satisfies: AC-9, AC-E3; AC-S1
   - Depends on: TASK-025
 
-- [ ] **TASK-027** [M] [P] Write event-evidence retention tests
+- [x] **TASK-027** [M] [P] Write event-evidence retention tests
   - Creates: `code/pick-zone-demo/tests/video/test_evidence.py`
   - Tests: AC-27, AC-E2, AC-E8
   - Verifies: bounded encoded ring, two-second pre/post roll, controlled FFmpeg arguments,
     finalization timeout, relative manifest path, missing evidence, and shutdown behavior
   - Depends on: TASK-012
 
-- [ ] **TASK-028** [M] [P] Implement bounded evidence capture and clip finalization
+- [x] **TASK-028** [M] [P] Implement bounded evidence capture and clip finalization
   - Creates: `code/pick-zone-demo/app/video/evidence.py`
   - Contracts: `contracts/events-review-api.md`, `contracts/live-stream-contract.md`
   - Plan: sections 4.11 and 6
