@@ -257,7 +257,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
   - Satisfies: AC-8, AC-9, AC-10, AC-17, AC-28, AC-E5, AC-E6
   - Depends on: TASK-029
 
-- [ ] **TASK-031** [M] Write application-context and worker-lifecycle tests
+- [x] **TASK-031** [M] Write application-context and worker-lifecycle tests
   - Creates: `code/pick-zone-demo/tests/core/test_lifecycle.py`
   - Tests: AC-4, AC-6, AC-8, AC-29, AC-30, AC-E8
   - Verifies: prerequisite aggregation, worker graph, start/pause/resume/stop/reset transitions,
