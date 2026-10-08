@@ -264,7 +264,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
     source replacement, bounded queues, persistence blocking, and shutdown within five seconds
   - Depends on: TASK-018, TASK-022, TASK-024, TASK-026, TASK-028, TASK-030
 
-- [ ] **TASK-032** [M] Implement application context, ordered analyzer, and lifecycle service
+- [x] **TASK-032** [M] Implement application context, ordered analyzer, and lifecycle service
   - Creates: `code/pick-zone-demo/app/core/context.py`,
     `code/pick-zone-demo/app/services/orchestrator.py`,
     `code/pick-zone-demo/app/core/lifecycle.py`
