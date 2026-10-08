@@ -249,7 +249,7 @@ Frozen interfaces: `specs/pick-zone-demo/contracts/`
     metrics/state fields, zone/detection/track/action drawing, and JPEG generation
   - Depends on: TASK-008, TASK-012, TASK-020
 
-- [ ] **TASK-030** [M] [P] Implement runtime state store and annotated preview renderer
+- [x] **TASK-030** [M] [P] Implement runtime state store and annotated preview renderer
   - Creates: `code/pick-zone-demo/app/services/runtime_state.py`,
     `code/pick-zone-demo/app/vision/overlay.py`
   - Contracts: `contracts/live-stream-contract.md`, `contracts/vision-domain-contract.md`
